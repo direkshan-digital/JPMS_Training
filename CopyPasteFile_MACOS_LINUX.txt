@@ -1,0 +1,434 @@
+﻿============================================================================================
+LAB 01: Listing the JDK's modules
+============================================================================================
+java --list-modules
+
+
+============================================================================================
+LAB 02: Listing a standard module's contents
+============================================================================================
+java --describe-module java.base
+
+java --describe-module java.sql
+
+
+============================================================================================
+LAB 03: Create com.deitel.welcome module declaration
+============================================================================================
+// Fig. 27.7: module-info.java
+// Module declaration for the com.deitel.welcome module
+module com.deitel.welcome {
+   requires java.base; // implicit in all modules, so can be omitted
+}
+
+
+============================================================================================
+LAB 04: Using NetBeans with JDK 9 support to graph com.deitel.welcome module's dependencies 
+============================================================================================
+Follow the steps on slides 106-107.
+
+
+============================================================================================
+LAB 05: Compiling the Welcome App as an "exploded" module
+============================================================================================
+javac -d mods/com.deitel.welcome \
+   src/com.deitel.welcome/module-info.java \
+   src/com.deitel.welcome/com/deitel/welcome/Welcome.java
+
+// similified with --module-source-path; javac finds the source files
+javac -d mods --module-source-path src –m com.deitel.welcome
+
+
+============================================================================================
+LAB 06: Listing the contents of the com.deitel.welcome module
+============================================================================================
+java --module-path mods -d com.deitel.welcome
+
+
+============================================================================================
+LAB 07: Listing the contents of the com.deitel.welcome module without requires java.base;
+============================================================================================
+Comment out the requires statement in module-info.java
+
+Recompile as in LAB-005
+
+java --module-path mods -d com.deitel.welcome
+
+
+============================================================================================
+LAB 08: Running the Welcome app from an exploded module
+============================================================================================
+java --module-path mods \
+   --module com.deitel.welcome/com.deitel.welcome.Welcome
+
+
+============================================================================================
+LAB 09: Packaging the com.deitel.welcome module into a modular JAR with an entry point
+============================================================================================
+jar --create -f jars/com.deitel.welcome.jar \
+   --main-class com.deitel.welcome.Welcome \
+   -C mods/com.deitel.welcome .
+
+
+============================================================================================
+LAB 09b (optional): Shorthand version of the prior jar command
+============================================================================================
+jar -cfe jars/com.deitel.welcome.jar \
+   com.deitel.welcome.Welcome \
+   -C mods/com.deitel.welcome .
+
+============================================================================================
+LAB 10: Running the Welcome app from its modular JAR
+============================================================================================
+java --module-path jars -m com.deitel.welcome
+
+OR 
+
+java -p jars -m com.deitel.welcome
+
+============================================================================================
+LAB 10b (optional): We did specify the entry point when creating the JAR, so you do not need to execute this
+============================================================================================
+java --module-path jars \
+   -m com.deitel.welcome/com.deitel.welcome.Welcome
+
+OR 
+
+java -p jars -m com.deitel.welcome/com.deitel.welcome.Welcome
+
+
+============================================================================================
+LAB 11: Time app code modifications and module declarations
+============================================================================================
+// add to Time1.java
+package com.deitel.timelibrary;
+
+// create module declaration for the com.deitel.timelibrary module
+module com.deitel.timelibrary {
+   exports com.deitel.timelibrary; // package available to other modules
+}
+
+// add to Time1Test.java
+package com.deitel.timetest;
+import com.deitel.timelibrary.Time1;
+
+// create module declaration for the com.deitel.timetest module
+module com.deitel.timetest {
+   requires com.deitel.timelibrary;
+}
+
+
+============================================================================================
+LAB 12: Using NetBeans with JDK 9 support to graph com.deitel.timetest module's dependencies 
+============================================================================================
+Follow the steps on slides 144-145.
+
+
+============================================================================================
+LAB 13: Compiling com.deitel.timelibrary
+============================================================================================
+javac -d mods/com.deitel.timelibrary \
+   src/com.deitel.timelibrary/module-info.java \
+   src/com.deitel.timelibrary/com/deitel/timelibrary/Time1.java
+
+
+============================================================================================
+LAB 14: Compiling com.deitel.timetest
+============================================================================================
+javac --module-path mods -d mods/com.deitel.timetest \
+   src/com.deitel.timetest/module-info.java \
+   src/com.deitel.timetest/com/deitel/timetest/Time1Test.java
+
+
+============================================================================================
+LAB 15: Running the Time app from the exploded module directories
+============================================================================================
+java --module-path mods \
+   -m com.deitel.timetest/com.deitel.timetest.Time1Test
+
+
+============================================================================================
+LAB 16: Packaging the Time app into modular JARs
+============================================================================================
+jar --create -f jars/com.deitel.timelibrary.jar \
+   -C mods/com.deitel.timelibrary .
+
+jar --create -f jars/com.deitel.timetest.jar \
+   --main-class com.deitel.timetest.Time1Test \
+   -C mods/com.deitel.timetest .
+
+
+============================================================================================
+LAB 17: Executing the Time app from the modular JARs
+============================================================================================
+java --module-path jars -m com.deitel.timetest
+
+
+============================================================================================
+LAB 18: Inaccessible types compilation error
+============================================================================================
+// Comment out the exports directive in com.deitel.timelibrary's module-info.java file
+
+// compile com.deitel.timelibrary
+javac -d mods/com.deitel.timelibrary \
+   src/com.deitel.timelibrary/module-info.java \
+   src/com.deitel.timelibrary/com/deitel/timelibrary/Time1.java
+
+// try to compile com.deitel.timetest
+javac --module-path mods -d mods/com.deitel.timetest \
+   src/com.deitel.timetest/module-info.java \
+   src/com.deitel.timetest/com/deitel/timetest/Time1Test.java
+
+
+============================================================================================
+LAB 19: Use NetBeans with JDK 9 support to show the java.sql module graph
+============================================================================================
+// create a netbeans project and add module-info.java to it, then in the module declaration add the requires directive
+module modulegraphtest {
+   requires java.sql;
+} 
+
+
+============================================================================================
+LAB 20: Use NetBeans with JDK 9 support to show the java.se module graph
+============================================================================================
+// modify the prior netbeans project's module declaration to require java.se
+module modulegraphtest {
+   requires java.se;
+} 
+
+
+============================================================================================
+LAB 21: Cycles not allowed in module graphs--module requiring itself
+============================================================================================
+// Execute from the folder ExamplesShowingErrors/ModuleThatRequiresItself
+javac *.java 
+
+
+============================================================================================
+LAB 22: Cycles not allowed in module graphs--modules each requiring the other
+============================================================================================
+// Execute from the folder ExamplesShowingErrors/CircularDependency
+javac --module-source-path src \
+   --module-path mods -d mods \
+   src/module1/module-info.java \
+   src/module1/package1/Class1.java \
+   src/module2/module-info.java \
+   src/module2/package2/Class2.java
+
+
+============================================================================================
+LAB 23: jdeps --jdk-internals showing internal API use
+============================================================================================
+// change to the JDK 8 installation folder on your system, then the JDK's lib folder
+jdeps --jdk-internals jconsole.jar
+
+
+============================================================================================
+LAB 24: jdeps showing com.deitel.welcome module's dependencies
+============================================================================================
+// execute from WelcomeApp folder
+jdeps --module-path jars -m com.deitel.welcome
+
+or
+
+jdeps jars/com.deitel.welcome.jar
+
+
+============================================================================================
+LAB 25: jdeps showing a class's dependencies
+============================================================================================
+// execute from WelcomeApp folder
+jdeps mods/com.deitel.welcome/com/deitel/welcome/Welcome.class
+
+
+============================================================================================
+LAB 26: jdeps showing verbose output for com.deitel.welcome module
+============================================================================================
+// execute from WelcomeApp folder
+jdeps mods/com.deitel.welcome/com/deitel/welcome/Welcome.class
+
+
+============================================================================================
+LAB 27: Modularizing the Video Player app
+============================================================================================
+
+// in VideoPlayer.fxml, replace VideoPlayerController with fully qualified name
+com.deitel.videoplayer.VideoPlayerController 
+
+// in VideoPlayer.java, add
+package com.deitel.videoplayer;
+
+// in VideoPlayer.java, change "VideoPlayer.fxml" to 
+"/res/VideoPlayer.fxml"
+
+// in VideoPlayerController.java, add
+package com.deitel.videoplayer;
+
+// in VideoPlayerController.java, change video filename from "sts117.mp4" to 
+"/res/sts117.mp4"
+
+// create module-info.java 
+
+// Fig. 27.21: module-info.java
+// Module declaration for the com.deitel.videoplayer module
+module com.deitel.videoplayer {
+   requires javafx.controls;
+   requires javafx.fxml;
+   requires javafx.media;
+   requires controlsfx; // automatic module for ControlsFX
+
+   exports com.deitel.videoplayer;
+   opens com.deitel.videoplayer to javafx.fxml;
+}
+
+
+============================================================================================
+LAB 28: Using NetBeans to create the Video Player app's module dependency graph
+============================================================================================
+// open the provided project in NetBeans, then open the module-info.java file from the default package
+
+
+============================================================================================
+LAB 29: Compiling the Video Player app
+============================================================================================
+javac --module-path mods -d mods/com.deitel.videoplayer \
+   src/com.deitel.videoplayer/module-info.java \
+   src/com.deitel.videoplayer/com/deitel/videoplayer/*.java
+
+
+============================================================================================
+LAB 30: Copying the resource files into the exploded module folder
+============================================================================================
+// must copy the res folder from src/com.deitel.videoplayer into mods/com.deitel.videoplayer
+
+
+============================================================================================
+LAB 31: Running the app from the exploded module
+============================================================================================
+java --module-path mods \
+   -m com.deitel.videoplayer/com.deitel.videoplayer.VideoPlayer
+
+
+============================================================================================
+LAB 31b: Running the app from the exploded module
+============================================================================================
+// comment out the opens directive in the module declaration, recompile it and rerun
+
+
+============================================================================================
+LAB 32: Listing just the JRE's modules
+============================================================================================
+// execute from the JRE's bin folder
+java --list-modules
+
+
+============================================================================================
+LAB 33: Creating a custom runtime for the Welcome app
+============================================================================================
+// execute from the WelcomeApp folder
+jlink --module-path "$JAVA_HOME"/jmods \
+   --add-modules java.base \
+   --output javabaseruntime
+
+
+============================================================================================
+LAB 34: Run Welcome app with custom javabaseruntime
+============================================================================================
+javabaseruntime/bin/java --module-path mods \
+   --module com.deitel.welcome/com.deitel.welcome.Welcome
+
+
+============================================================================================
+LAB 35: Listing the modules in the custom javabaseruntime
+============================================================================================
+javabaseruntime/bin/java --list-modules
+
+
+============================================================================================
+LAB 36: Creating a runtime that supports java.desktop and its dependencies
+============================================================================================
+jlink --module-path "$JAVA_HOME"/jmods ^
+   --add-modules java.desktop --output javadesktopruntime
+
+============================================================================================
+LAB 37: Listing the modules in the custom javadesktopruntime
+============================================================================================
+javadesktopruntime/bin/java --list-modules
+
+
+============================================================================================
+LAB 38: Creating a custom runtime containing com.deitel.welcome and its dependencies 
+============================================================================================
+jlink --module-path jars:"$JAVA_HOME"/jmods \
+   --add-modules com.deitel.welcome --output welcomeruntime
+
+============================================================================================
+LAB 39: Listing the modules in the welcomeruntime
+============================================================================================
+welcomeruntime/bin/java --list-modules
+
+
+============================================================================================
+LAB 40: Running the Welcome app from welcomeruntime
+============================================================================================
+welcomeruntime/bin/java -m com.deitel.welcome
+
+
+============================================================================================
+LAB 41: Module resolution 
+============================================================================================
+welcomeruntime/bin/java --show-module-resolution -m com.deitel.welcome
+
+// execute from the TimeApp folder
+java --show-module-resolution -p jars -m com.deitel.timetest
+
+// execute from the VideoPlayer folder
+java --show-module-resolution -p jars:mods/controlsfx.jar -m com.deitel.videoplayer
+
+============================================================================================
+LAB 42: Compiling module com.deitel.mathtutor
+============================================================================================
+javac -d mods/com.deitel.mathtutor \
+   src/com.deitel.mathtutor/module-info.java \
+   src/com.deitel.mathtutor/com/deitel/mathtutor/MathTutor.java \
+   src/com.deitel.mathtutor/com/deitel/mathtutor/spi/*.java
+
+
+============================================================================================
+LAB 43: Running the App with No Service Providers
+============================================================================================
+java --module-path mods/com.deitel.mathtutor \
+   -m com.deitel.mathtutor/com.deitel.mathtutor.MathTutor
+
+
+============================================================================================
+LAB 44: Compiling module com.deitel.additionprovider
+============================================================================================
+javac --module-path mods -d mods/com.deitel.additionprovider \
+   src/com.deitel.additionprovider/module-info.java \
+   src/com.deitel.additionprovider/com/deitel/additionprovider/ \
+      AdditionProblemProvider.java
+
+
+============================================================================================
+LAB 45: Running the App with an AdditionProblemProvider
+============================================================================================
+java --module-path mods \
+   -m com.deitel.mathtutor/com.deitel.mathtutor.MathTutor
+
+
+============================================================================================
+LAB 46: Compiling module com.deitel.multiplicationprovider
+============================================================================================
+javac --module-path mods \
+   -d mods/com.deitel.multiplicationprovider \
+   src/com.deitel.multiplicationprovider/module-info.java \
+   src/com.deitel.multiplicationprovider/com/deitel/multiplicationprovider/MultiplicationProblemProvider.java
+
+
+============================================================================================
+LAB 47: Running the App with both providers
+============================================================================================
+java --module-path mods \
+   -m com.deitel.mathtutor/com.deitel.mathtutor.MathTutor
